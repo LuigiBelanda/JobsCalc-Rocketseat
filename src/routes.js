@@ -1,172 +1,197 @@
 const express = require('express');
-const routes = express.Router();
+const routes = express.Router()
 
-// por padrão o EJS le a pasta views na raiz do projeto
-// como a pasta views do nosso projeto está dentro de src
-// então fazemos o seguinte
-const views = __dirname + "/views/";
+const views = __dirname + "/views/"
 
-// Objeto Literal 
+// Object Literal
 const Profile = {
-    data: {
-        name: "Jakeliny",
-        avatar: "https://avatars.githubusercontent.com/u/17316392?v=4",
-        // quando temas palavras com "-" podemos usar aspas duplas para usar elas em objetos, se não dá erro
-        "monthly-budget": 5000,
-        "days-per-week": 5,
-        "hours-per-day": 5,
-        "vacation-per-year": 4,
-        "value-hour": 2
+  data: {
+    name: "Mayk",
+    avatar: "https://github.com/maykbrito.png",
+    "monthly-budget": 3000,
+    "days-per-week": 5,
+    "hours-per-day": 5,
+    "vacation-per-year": 4,
+    "value-hour": 75
+  },
+
+  // cada controller será meio que uma função que será chamada ou referenciada em algum momento
+  controllers: {
+    // apenas passas as infos para a home
+    index(req, res) {
+      return res.render(views + "profile", { profile: Profile.data })
     },
 
-    controllers: {
-        index(req, res) {
-            return res.render(views + "profile", { profile: Profile.data });
-        },
+    // att os dados dos jobs
+    update(req, res) {
+      // req.body para pegar os dados
+      const data = req.body
 
-        update(req, res) {
-            // req.body para pegar os dados
-            const data = req.body;
+      // definir quantas semanas tem num ano: 52
+      const weeksPerYear = 52
 
-            // definir quantas semanas tem no ano: 52
-            const weeksPerYear = 52; 
+      // remover as semanas de férias do ano, para pegar quantas semanas tem em 1 mês
+      const weeksPerMonth = (weeksPerYear - data["vacation-per-year"] ) / 12
+      
+      // total de horas trabalhadas na semana
+      const weekTotalHours  = data["hours-per-day"] * data["days-per-week"]
 
-            // remover as semanas de férias, para pegar as semanas que tem em 1 mês
-            const weeksPerMonth = (weeksPerYear - data["vacation-per-year"]) / 12;
+      // horas trabalhadas no mês
+      const monthlyTotalHours = weekTotalHours * weeksPerMonth
 
-            // quantas horas por semana estou trabalhando 
-            const weekTotalHours = data["hours-per-day"] * data["days-per-week"];
+      // qual será o valor da minha hora?
+      const valueHour = data["monthly-budget"] / monthlyTotalHours
 
-            // total de horas trabalhadas no mês
-            const monthlyTotalHours = weekTotalHours * weeksPerMonth;
+      // ... spread / rest operator
+      Profile.data = {
+        ...Profile.data,
+        ...req.body,
+        "value-hour": valueHour
+      }
 
-            // qual o valor da minha hora de trabalho
-            const valueHour = data["monthly-budget"] / monthlyTotalHours;
-
-            Profile.data = {
-                ...Profile.data,
-                ...req.body,
-                "value-hour": valueHour, 
-            }
-
-            return res.redirect('/profile');
-
-        }
+      return res.redirect('/profile')
     }
+  }
+
 }
 
-// Objeto Literal 
+// Object Literal
 const Job = {
-    data: [
-        {
-            id: 1,
-            name: "Pizzaria guloso",
-            "daily-hours": 2, 
-            "total-hours": 1,
-            created_at: Date.now(), 
-        },
-        {
-            id: 2,
-            name: "OneTwo Project",
-            "daily-hours": 3, 
-            "total-hours": 47,
-            created_at: Date.now(),
-        },
-    ],
+  data: [
+    {
+      id: 1,
+      name: "Pizzaria Guloso",
+      "daily-hours": 2, 
+      "total-hours": 1, 
+      created_at: Date.now()
+    },
+    {
+      id: 2,
+      name: "OneTwo Project",
+      "daily-hours": 3, 
+      "total-hours": 47, 
+      created_at: Date.now()
+    }
+  ],
 
-    controllers: {
-        // função que usamos para passar os projects para o index e mostrar na tela
-        index(req, res) {
-                // aqui usamos o .map pois iremos gerar um novo array e enviar depois para o index no return
-                const updatedJobs = Job.data.map((job) => {
-                // aqui chamamos a função que criamos acima passando job como parametro
-                // NOTA: passamos como função o services abaixo
-                const remaining = Job.services.remainingDays(job);
-                // aqui vemos se o número de dias faltando é menor ou igual 0 ou não
-                // se for 0 o status é done
-                // se for outro valor é progress
-                const status = remaining <= 0 ? 'done' : 'progress';
-            
-                // aqui usamos spread operators
-                // em vez de colocarmos cada propriedade do objeto usamos ...job
-                // assim pegamos todas as props de uma vez e colocamos elas no objeto que será retornado
-                return {
-                    ...job,
-                    remaining,
-                    status,
-                    budget: Profile.data["value-hour"] * job["total-hours"]
-                }
-            })
-            
-            return res.render(views + "index", { jobs: updatedJobs }); // res.send / res.render / res.sendFile = mandamos um retorno pro user
-        },
-
-        save(req, res) {
-            // com essa linha pegamos oq o user enviou
-            // console.log(req.body);
-
-            // aqui vamos ver qual vai ser o id do nosso job
-            // pegamos e contamos quantos elementos tem no nosso array jobs
-            // tiramos -1 dele pois o array começa com 0
-            // depois com isso ou definimos o id e se der errado definimos com 1
-            const lastId = Job.data[Job.data.length - 1]?.id || 1;
-
-            // aqui pegamos as infos e jogamos para o nosso array jobs
-            Job.data.push({
-                id: lastId + 1,
-                name: req.body.name,
-                "daily-hours": req.body["daily-hours"], 
-                "total-hours": req.body["total-hours"],
-                created_at: Date.now() // pegando a data de hoje
-            });
-
-            return res.redirect("/"); 
-        },
-
-        create(req, res) {
-            return res.render(views + "job");
+  controllers: {
+    index(req, res) {
+      const updatedJobs = Job.data.map((job) => {
+        // ajustes no job
+        const remaining = Job.services.remainingDays(job)
+        const status = remaining <= 0 ? 'done' : 'progress'
+        
+        return {
+          ...job,
+          remaining,
+          status,
+          budget: Job.services.calculateBudget(job, Profile.data["value-hour"])
         }
+      })
+    
+      return res.render(views + "index", { jobs: updatedJobs })
     },
 
-    services: {
-        remainingDays(job) {
-            // ajustes nos jobs
-            // calculo de tempo restante
-            const remainingDays =  (job['total-hours'] / job['daily-hours']).toFixed();
-            
-            // aqui pegamos e colocamos na var createdDate o dia que criamos o job
-            const createdDate = new Date(job.created_at);
-            // aqui vemos em que dia iremos terminar nosso projeto
-            const dueDay = createdDate.getDate() + Number(remainingDays);
-            const dueDateInMs = createdDate.setDate(dueDay);
-        
-            // aqui vemos a diferença em ms do dia que vamos terminar o projeto pra data de hoje
-            const timeDiffInMs = dueDateInMs - Date.now();       
-        
-            // transformando ms em dias
-            const dayInMs = 1000 * 60 * 60 * 24;
-        
-            // diferença de dias
-            const dayDiff = Math.floor((timeDiffInMs / dayInMs));
-        
-            // dias restantes
-            return dayDiff;
-        }
+    create(req, res) {
+      return res.render(views + "job")
     },
+
+    save(req, res) {
+      const lastId = Job.data[Job.data.length - 1]?.id || 0;
+
+      Job.data.push({
+        id: lastId + 1,
+        name: req.body.name,
+        "daily-hours": req.body["daily-hours"], 
+        "total-hours": req.body["total-hours"], 
+        created_at: Date.now()
+      })
+
+      return res.redirect('/')
+    },
+
+    show(req, res) {
+      const jobId = req.params.id
+
+      const job = Job.data.find(job => Number(job.id) === Number(jobId))
+
+      if (!job) {
+        return res.send('Job not found!')
+      }
+
+      job.budget = Job.services.calculateBudget(job, Profile.data["value-hour"])
+
+      return res.render(views + "job-edit", { job })
+    },
+
+    update(req, res) {
+      const jobId = req.params.id
+
+      const job = Job.data.find(job => Number(job.id) === Number(jobId))
+
+      if (!job) {
+        return res.send('Job not found!')
+      }
+
+      const updatedJob = {
+        ...job, 
+        name: req.body.name,
+        "total-hours": req.body["total-hours"], 
+        "daily-hours": req.body["daily-hours"], 
+      }
+
+      Job.data = Job.data.map(job => {
+        if(Number(job.id) === Number(jobId)) {
+          job = updatedJob
+        }
+        
+        return job
+      })
+
+      res.redirect('/job/' + jobId)
+    },
+
+    delete(req, res) {
+      const jobId = req.params.id
+
+      Job.data = Job.data.filter(job => Number(job.id) !== Number(jobId))
+
+      return res.redirect('/')
+    }
+  },
+
+  services: {
+    remainingDays(job) {
+      // cálculo de tempo restante
+      const remainingDays = (job["total-hours"] / job["daily-hours"]).toFixed()
+    
+      const createdDate = new Date(job.created_at)
+      const dueDay = createdDate.getDate() + Number(remainingDays)
+      const dueDateInMs = createdDate.setDate(dueDay)
+    
+      const timeDiffInMs = dueDateInMs - Date.now()
+      // transformar milli em dias
+      const dayInMs = 1000 * 60 * 60 * 24
+      const dayDiff = Math.floor(timeDiffInMs / dayInMs)
+    
+      // restam x dias
+      return dayDiff
+    },
+    calculateBudget: (job, valueHour) => valueHour * job["total-hours"]
+  }
 }
 
-// assim que o user for na home/index de nosso site ele irá fazer o que passarmos a seguir
-// request e response
-// esse Job.controllers.index é o object literal que criamos acima, index é a função que usamos para att e enviar depois os projects pro index
-routes.get('/', Job.controllers.index) 
-routes.get('/job', Job.controllers.create);
-// rota para salvarmos os dados form do job.ejs
-routes.post('/job', Job.controllers.save);
-routes.get('/job/edit', (req, res) => { return res.render(views + "job-edit") });
-routes.get('/profile', Profile.controllers.index);
-routes.post('/profile', Profile.controllers.update);
+// Rotas
+routes.get('/', Job.controllers.index)
+routes.get('/job', Job.controllers.create)
+routes.post('/job', Job.controllers.save)
+// :id passamos o id como um param da string http
+routes.get('/job/:id', Job.controllers.show)
+routes.post('/job/:id', Job.controllers.update)
+routes.post('/job/delete/:id', Job.controllers.delete)
+routes.get('/profile', Profile.controllers.index)
+routes.post('/profile', Profile.controllers.update)
 
-// exportando o arquivo / dados routes.js
-// assim conseguimos chamar esse arquivo em outras partes do projeto
-// assim usamos funções e dados que estão aqui
+ 
+// aqui exportamos os dados / funções desse arquivo para usarmos em outros locais
 module.exports = routes;

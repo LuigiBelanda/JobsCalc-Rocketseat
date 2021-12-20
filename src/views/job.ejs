@@ -25,13 +25,15 @@
   </head>
   <body id="page-job">
     
-    <!-- Reaproveitando partes do código por causa do EJS -->
-    <%- include('parts/page-header', { title: 'Adicionar novo job' }) %> 
+    <%- include('parts/page-header', { title: 'Adicionar novo job'}) %>
 
     <div class="container flex animate-up delay-2">
       <main>
-        <!-- action = local que as infos vão / method = método http que será usado (post nesse caso)-->
-        <form id="form-job" action="/job" method="post">
+        
+        <form id="form-job" 
+          method="post" 
+          action="/job">
+        
           <fieldset>
             <legend>Dados do Job</legend>
             <div class="separator light"></div>
