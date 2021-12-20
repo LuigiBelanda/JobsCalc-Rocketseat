@@ -4,15 +4,19 @@
 // pegando o módulo express
 const express = require('express');
 const server = express();
-const routes = require('./routes');
+const routes = require('./routes'); // chamando o arquivo / dados do routes.js
 
 // setando nossa view engine para EJS
 server.set('view engine', 'ejs');
 
 // console.log(server);
 
+// usamos o .use para configurar nosso servidor
 // habilitar arquivos statics
 server.use(express.static("public")); // middleware
+
+// usando o req.body
+server.use(express.urlencoded({ extended: true }));
 
 // Routes
 server.use(routes);
