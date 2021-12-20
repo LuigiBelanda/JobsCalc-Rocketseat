@@ -77,21 +77,24 @@
 
         <div class="cards">
           <% jobs.forEach((job) => { %>
-            <div class="card progress" data-id="1">
+            <div class="card <%= job.status %>" data-id="<%= job.id %>">
               <div class="id column">1</div>
               <div class="name column">
-                  <%= jobs %> 
+                  <%= job.name %> 
               </div>
               <div class="deadline column">
                 <span>Prazo</span>
-                <p>3 dias para a entrega</p>
+                <p><%= job.remaining %> dias para a entrega</p>
               </div>
               <div class="amount column">
                 <span>Valor</span>
-                <p>R$ 4500,00</p>
+                <!-- aqui usamos o toFixed() para colocarmos apenas 2 casas decimais -->
+                <!-- usamos o replace() para trocar o ponto que vem como padrão por vírgula -->
+                <p>R$ <%= job.budget.toFixed(2).replace('.', ',') %></p>
               </div>
               <div class="status badge column">
-                Em andamento
+                <!-- usando ternário -->
+                <%= job.status === 'done' ? 'Encerrado' : 'Em andamento' %> 
               </div>
               <div class="actions column flex">
                 <p class="sr-only">Ações</p>

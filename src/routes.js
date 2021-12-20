@@ -13,32 +13,78 @@ const profile = {
     "monthly-budget": 3000,
     "days-per-week": 5,
     "hours-per-day": 5,
-    "vacation-per-year": 4
+    "vacation-per-year": 4,
+    "value-hour": 75
 }
 
 const jobs = [
     {
         id: 1,
         name: "Pizzaria guloso",
-        "daily-hours": 3, 
-        "total-hours": 30,
-        created_at: Date.now() 
+        "daily-hours": 2, 
+        "total-hours": 1,
+        created_at: Date.now(), 
     },
     {
         id: 2,
         name: "OneTwo Project",
         "daily-hours": 3, 
         "total-hours": 47,
-        created_at: Date.now() 
+        created_at: Date.now(),
     },
 ];
+
+function remainingDays(job) {
+    // ajustes nos jobs
+    // calculo de tempo restante
+    const remainingDays =  (job['total-hours'] / job['daily-hours']).toFixed();
+    
+    // aqui pegamos e colocamos na var createdDate o dia que criamos o job
+    const createdDate = new Date(job.created_at);
+    // aqui vemos em que dia iremos terminar nosso projeto
+    const dueDay = createdDate.getDate() + Number(remainingDays);
+    const dueDateInMs = createdDate.setDate(dueDay);
+
+    // aqui vemos a diferença em ms do dia que vamos terminar o projeto pra data de hoje
+    const timeDiffInMs = dueDateInMs - Date.now();       
+
+    // transformando ms em dias
+    const dayInMs = 1000 * 60 * 60 * 24;
+
+    // diferença de dias
+    const dayDiff = Math.floor((timeDiffInMs / dayInMs));
+
+    // dias restantes
+    return dayDiff;
+}
 
 // assim que o user for na home/index de nosso site ele irá fazer o que passarmos a seguir
 // request e response
 routes.get('/', (req, res) => {
     console.log('Entrei no index');
     // console.log(__dirname + "/views/index");
-    return res.render(views + "index", { jobs }); // res.send / res.render / res.sendFile = mandamos um retorno pro user
+
+    // aqui usamos o .map pois iremos gerar um novo array e enviar depois para o index no return
+    const updatedJobs = jobs.map((job) => {
+        // aqui chamamos a função que criamos acima passando job como parametro
+        const remaining = remainingDays(job);
+        // aqui vemos se o número de dias faltando é menor ou igual 0 ou não
+        // se for 0 o status é done
+        // se for outro valor é progress
+        const status = remaining <= 0 ? 'done' : 'progress';
+
+        // aqui usamos spread operators
+        // em vez de colocarmos cada propriedade do objeto usamos ...job
+        // assim pegamos todas as props de uma vez e colocamos elas no objeto que será retornado
+        return {
+            ...job,
+            remaining,
+            status,
+            budget: profile["value-hour"] * job["total-hours"]
+        }
+    })
+
+    return res.render(views + "index", { jobs: updatedJobs }); // res.send / res.render / res.sendFile = mandamos um retorno pro user
 });
 
 routes.get('/job', (req, res) => {
