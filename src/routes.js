@@ -4,6 +4,8 @@ const routes = express.Router();
 const ProfileController = require("./controllers/ProfileController");
 // pegando o JobController
 const JobController = require("./controllers/JobController");
+// pegando o DashboardController
+const DashboardController = require("./controllers/DashboardController");
 
 // como o server entende que a pasta view está na raiz temos que arrumar isso
 // por isso pegamos o __dirname, ou seja, o nome/caminho do diretório que estamos
@@ -11,7 +13,7 @@ const JobController = require("./controllers/JobController");
 // const views = __dirname + "/views/"
 
 // Rotas
-routes.get("/", JobController.index);
+routes.get("/", DashboardController.index);
 routes.get("/job", JobController.create);
 routes.post("/job", JobController.save);
 // :id passamos o id como um param da string http
