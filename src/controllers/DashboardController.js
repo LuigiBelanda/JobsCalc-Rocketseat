@@ -18,6 +18,9 @@ module.exports = {
       total: jobs.length,
     };
 
+    // total de horas por dia de cada job em progress
+    let jobTotalHours = 0;
+
     const updatedJobs = jobs.map((job) => {
       // ajustes no job
       const remaining = JobUtils.remainingDays(job);
@@ -28,6 +31,9 @@ module.exports = {
       // statusCount[progress] += 1;
       statusCount[status] += 1;
 
+      // total de horas por dia de cada job em progress
+      jobTotalHours = status == "progress" ? (jobTotalHours + Number(job["daily-hours"])) : jobTotalHours;
+
       return {
         ...job,
         remaining,
@@ -36,11 +42,15 @@ module.exports = {
       };
     });
 
-    // mandando para o index nossos jobs, nossas infos do profile, nº de jobs
+    // quantidade de horas que quero trabalhar dia (PROFILE) - MENOS - quantidade de horas/dia de cada job em progress
+    const freeHours = profile["hours-per-day"] - jobTotalHours;
+
+    // mandando para o index nossos jobs, nossas infos do profile, nº de jobs etc
     return res.render("index", {
       jobs: updatedJobs,
       profile: profile,
       statusCount: statusCount,
+      freeHours: freeHours,
     });
   },
 };
