@@ -1,6 +1,5 @@
 const Job = require("../model/Job");
-const JobUtils = require("../utils/jobUtils");
-const Profile = require("../model/Profile");
+const JobUtils = require("../utils/JobUtils");
 const Profile = require("../model/Profile");
 
 module.exports = {
@@ -45,23 +44,28 @@ module.exports = {
   },
 
   show(req, res) {
+    const jobs = Job.get();
+    const profile = Profile.get();
+
     const jobId = req.params.id;
 
-    const job = Job.data.find((job) => Number(job.id) === Number(jobId));
+    const job = jobs.find((job) => Number(job.id) === Number(jobId));
 
     if (!job) {
       return res.send("Job not found!");
     }
 
-    job.budget = Job.services.calculateBudget(job, Profile.data["value-hour"]);
+    job.budget = JobUtils.calculateBudget(job, profile["value-hour"]);
 
     return res.render("job-edit", { job });
   },
 
   update(req, res) {
+    const jobs = Job.get();
+
     const jobId = req.params.id;
 
-    const job = Job.data.find((job) => Number(job.id) === Number(jobId));
+    const job = jobs.find((job) => Number(job.id) === Number(jobId));
 
     if (!job) {
       return res.send("Job not found!");
@@ -74,7 +78,7 @@ module.exports = {
       "daily-hours": req.body["daily-hours"],
     };
 
-    Job.data = Job.data.map((job) => {
+    const newJobs = jobs.map((job) => {
       if (Number(job.id) === Number(jobId)) {
         job = updatedJob;
       }
@@ -82,13 +86,17 @@ module.exports = {
       return job;
     });
 
+    // chamando o update do model job
+    Job.update(newJobs);
+
     res.redirect("/job/" + jobId);
   },
 
   delete(req, res) {
-    const jobId = req.params.id;
+    const jobs = Job.get();
 
-    Job.data = Job.data.filter((job) => Number(job.id) !== Number(jobId));
+    const jobId = req.params.id;
+    Job.delete(jobId);
 
     return res.redirect("/");
   },
