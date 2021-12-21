@@ -1,7 +1,12 @@
 const express = require('express');
 const routes = express.Router()
+// aqui pegamos os nossos ProfilesController que estão em outra pasta e arquivo
+const ProfileController = require('./controllers/ProfileController')
 
-const views = __dirname + "/views/"
+// como o server entende que a pasta view está na raiz temos que arrumar isso
+// por isso pegamos o __dirname, ou seja, o nome/caminho do diretório que estamos
+// e concatenamos com "/views/" que é onde nossos arquivos ejs estão
+// const views = __dirname + "/views/"
 
 // Object Literal
 const Profile = {
@@ -13,46 +18,7 @@ const Profile = {
     "hours-per-day": 5,
     "vacation-per-year": 4,
     "value-hour": 75
-  },
-
-  // cada controller será meio que uma função que será chamada ou referenciada em algum momento
-  controllers: {
-    // apenas passas as infos para a home
-    index(req, res) {
-      return res.render(views + "profile", { profile: Profile.data })
-    },
-
-    // att os dados dos jobs
-    update(req, res) {
-      // req.body para pegar os dados
-      const data = req.body
-
-      // definir quantas semanas tem num ano: 52
-      const weeksPerYear = 52
-
-      // remover as semanas de férias do ano, para pegar quantas semanas tem em 1 mês
-      const weeksPerMonth = (weeksPerYear - data["vacation-per-year"] ) / 12
-      
-      // total de horas trabalhadas na semana
-      const weekTotalHours  = data["hours-per-day"] * data["days-per-week"]
-
-      // horas trabalhadas no mês
-      const monthlyTotalHours = weekTotalHours * weeksPerMonth
-
-      // qual será o valor da minha hora?
-      const valueHour = data["monthly-budget"] / monthlyTotalHours
-
-      // ... spread / rest operator
-      Profile.data = {
-        ...Profile.data,
-        ...req.body,
-        "value-hour": valueHour
-      }
-
-      return res.redirect('/profile')
-    }
   }
-
 }
 
 // Object Literal
@@ -89,11 +55,11 @@ const Job = {
         }
       })
     
-      return res.render(views + "index", { jobs: updatedJobs })
+      return res.render("index", { jobs: updatedJobs })
     },
 
     create(req, res) {
-      return res.render(views + "job")
+      return res.render("job")
     },
 
     save(req, res) {
@@ -121,7 +87,7 @@ const Job = {
 
       job.budget = Job.services.calculateBudget(job, Profile.data["value-hour"])
 
-      return res.render(views + "job-edit", { job })
+      return res.render("job-edit", { job })
     },
 
     update(req, res) {
@@ -189,8 +155,9 @@ routes.post('/job', Job.controllers.save)
 routes.get('/job/:id', Job.controllers.show)
 routes.post('/job/:id', Job.controllers.update)
 routes.post('/job/delete/:id', Job.controllers.delete)
-routes.get('/profile', Profile.controllers.index)
-routes.post('/profile', Profile.controllers.update)
+// Usando o ProfileController que importamos no começo do código
+routes.get('/profile', ProfileController.index)
+routes.post('/profile', ProfileController.update)
 
  
 // aqui exportamos os dados / funções desse arquivo para usarmos em outros locais
