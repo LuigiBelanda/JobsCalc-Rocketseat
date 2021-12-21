@@ -1,11 +1,14 @@
 // cada controller será meio que uma função que será chamada ou referenciada em algum momento
 
+const Profile = require('../model/Profile')
+
 // Utilizando o module.exports conseguimos exportar as funções que estão nesse arquivo 
 // assim conseguimos integrar nosso projeto, mas deixando cada arquivo responsável por uma parte
 module.exports = {
     // apenas passas as infos para a home
     index(req, res) {
-      return res.render("profile", { profile: Profile.data })
+      // com o Profile.get() pegamos os dados que estão vindo do model Profile
+      return res.render("profile", { profile: Profile.get() })
     },
 
     // att os dados dos jobs
@@ -29,11 +32,11 @@ module.exports = {
       const valueHour = data["monthly-budget"] / monthlyTotalHours
 
       // ... spread / rest operator
-      Profile.data = {
-        ...Profile.data,
+      Profile.update({ 
+        ...Profile.get(),
         ...req.body,
         "value-hour": valueHour
-      }
+       })
 
       return res.redirect('/profile')
     }
