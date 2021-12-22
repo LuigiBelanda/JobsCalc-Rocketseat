@@ -12,6 +12,15 @@ module.exports = {
 
     const lastId = jobs[jobs.length - 1]?.id || 0;
 
+    // chamando o método create do model Job, assim salvamos mais um job
+    Job.create({
+      id: lastId + 1,
+      name: req.body.name,
+      "daily-hours": req.body["daily-hours"],
+      "total-hours": req.body["total-hours"],
+      created_at: Date.now(),
+    });
+    /*
     jobs.push({
       id: lastId + 1,
       name: req.body.name,
@@ -19,6 +28,7 @@ module.exports = {
       "total-hours": req.body["total-hours"],
       created_at: Date.now(),
     });
+    */
 
     return res.redirect("/");
   },
