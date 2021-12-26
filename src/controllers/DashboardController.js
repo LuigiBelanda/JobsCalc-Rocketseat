@@ -6,7 +6,7 @@ module.exports = {
   // add o async ao index pois temos um await dentro dele
   async index(req, res) {
     // a var jobs pega todos os nossos jobs e armazena, essas dados vem do model Job
-    const jobs = Job.get();
+    const jobs = await Job.get();
     // a var profile pega todos os dados do nosso profile e armazena, essas dados vem do model Profile
     const profile = await Profile.get(); // add o await pq o get é async e quando chamamos algo que é async usamos o await também para a chamada
 

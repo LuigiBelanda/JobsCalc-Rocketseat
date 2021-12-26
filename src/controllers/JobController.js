@@ -7,14 +7,9 @@ module.exports = {
     return res.render("job");
   },
 
-  save(req, res) {
-    const jobs = Job.get();
-
-    const lastId = jobs[jobs.length - 1]?.id || 0;
-
+  async save(req, res) {
     // chamando o método create do model Job, assim salvamos mais um job
-    Job.create({
-      id: lastId + 1,
+    await Job.create({
       name: req.body.name,
       "daily-hours": req.body["daily-hours"],
       "total-hours": req.body["total-hours"],
@@ -33,9 +28,9 @@ module.exports = {
     return res.redirect("/");
   },
 
-  show(req, res) {
-    const jobs = Job.get();
-    const profile = Profile.get();
+  async show(req, res) {
+    const jobs = await Job.get();
+    const profile = await Profile.get();
 
     const jobId = req.params.id;
 
@@ -50,8 +45,8 @@ module.exports = {
     return res.render("job-edit", { job });
   },
 
-  update(req, res) {
-    const jobs = Job.get();
+  async update(req, res) {
+    const jobs = await Job.get();
 
     const jobId = req.params.id;
 
@@ -82,8 +77,8 @@ module.exports = {
     res.redirect("/job/" + jobId);
   },
 
-  delete(req, res) {
-    const jobs = Job.get();
+  async delete(req, res) {
+    const jobs = await Job.get();
 
     const jobId = req.params.id;
     Job.delete(jobId);

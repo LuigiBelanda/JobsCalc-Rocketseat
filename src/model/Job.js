@@ -24,15 +24,39 @@ module.exports = {
     const db = await Database();
 
     // db.all traz todos os dados
-    await db.all(`SELECT * FROM jobs`);
+    const jobs = await db.all(`SELECT * FROM jobs`);
 
     await db.close();
 
-    return data;
+    // usando o map para normalizar todos os dados do array que veio dos jobs
+    return jobs.map((job) => ({
+      id: job.id,
+      name: job.name,
+      "daily-hours": job.daily_hours,
+      "total-hours": job.total_hours,
+      created_at: job.created_at,
+    }));
   },
 
-  create(newJob) {
-    data.push(newJob);
+  async create(newJob) {
+    // data.push(newJob);
+
+    const db = await Database();
+
+    // inserindo o novo job no db
+    await db.run(`INSERT INTO jobs (
+      name, 
+      daily_hours, 
+      total_hours,
+      created_at
+      ) VALUES (
+        "${newJob.name}",
+        ${newJob["daily-hours"]},
+        ${newJob["total-hours"]},
+        ${newJob.created_at}
+      )`);
+
+    await db.close();
   },
 
   update(newJob) {
