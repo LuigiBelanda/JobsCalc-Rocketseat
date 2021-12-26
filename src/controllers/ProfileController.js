@@ -12,7 +12,7 @@ module.exports = {
   },
 
   // att os dados dos jobs
-  update(req, res) {
+  async update(req, res) {
     // req.body para pegar os dados
     const data = req.body;
 
@@ -31,9 +31,11 @@ module.exports = {
     // qual será o valor da minha hora?
     const valueHour = data["monthly-budget"] / monthlyTotalHours;
 
+    const profile = await Profile.get();
+
     // ... spread / rest operator
-    Profile.update({
-      ...Profile.get(),
+    await Profile.update({
+      ...profile,
       ...req.body,
       "value-hour": valueHour,
     });

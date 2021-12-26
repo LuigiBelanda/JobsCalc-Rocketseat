@@ -18,6 +18,7 @@ let data = {
 module.exports = {
   // quando o get deste model for chamado ele irá retornar apenas a const data
   async get() {
+    // iniciando o db
     const db = await Database();
 
     // get pega apenas 1 dado no SQLite
@@ -38,7 +39,26 @@ module.exports = {
   },
 
   // aqui att os dados
-  update(newData) {
-    data = newData;
+  async update(newData) {
+    // data = newData;
+
+    const db = await Database();
+
+    // por estarmos usando crase `x` para a query SQL usamos o a seguinte sintaxe para pegar os novos dados
+    // ${dado_recebido.nome_do_campo}
+    // Ex: "${newData.name}""
+    // ${newData["monthly-budget"]}
+    // newData veio como parâmetro da função
+    db.run(`UPDATE profile SET 
+      name = "${newData.name}",
+      avatar = "${newData.avatar}",
+      monthly_budget = ${newData["monthly-budget"]}, 
+      days_per_week = ${newData["days-per-week"]},
+      hours_per_day = ${newData["hours-per-day"]}, 
+      vacation_per_year = ${newData["vacation-per-year"]},
+      value_hour = ${newData["value-hour"]} 
+    `);
+
+    await db.close();
   },
 };

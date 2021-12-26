@@ -1,3 +1,6 @@
+const Database = require("../db/config");
+
+/*
 let data = [
   {
     id: 1,
@@ -14,9 +17,17 @@ let data = [
     created_at: Date.now(),
   },
 ];
+*/
 
 module.exports = {
-  get() {
+  async get() {
+    const db = await Database();
+
+    // db.all traz todos os dados
+    await db.all(`SELECT * FROM jobs`);
+
+    await db.close();
+
     return data;
   },
 
