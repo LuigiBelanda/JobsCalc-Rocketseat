@@ -6,9 +6,9 @@ const Profile = require("../model/Profile");
 // assim conseguimos integrar nosso projeto, mas deixando cada arquivo responsável por uma parte
 module.exports = {
   // apenas passas as infos para a home
-  index(req, res) {
+  async index(req, res) {
     // com o Profile.get() pegamos os dados que estão vindo do model Profile
-    return res.render("profile", { profile: Profile.get() });
+    return res.render("profile", { profile: await Profile.get() }); // add o await pq o get é async e quando chamamos algo que é async usamos o await também para a chamada
   },
 
   // att os dados dos jobs

@@ -3,11 +3,12 @@ const JobUtils = require("../utils/JobUtils");
 const Profile = require("../model/Profile");
 
 module.exports = {
-  index(req, res) {
+  // add o async ao index pois temos um await dentro dele
+  async index(req, res) {
     // a var jobs pega todos os nossos jobs e armazena, essas dados vem do model Job
     const jobs = Job.get();
     // a var profile pega todos os dados do nosso profile e armazena, essas dados vem do model Profile
-    const profile = Profile.get();
+    const profile = await Profile.get(); // add o await pq o get é async e quando chamamos algo que é async usamos o await também para a chamada
 
     let statusCount = {
       progress: 0,
@@ -32,7 +33,10 @@ module.exports = {
       statusCount[status] += 1;
 
       // total de horas por dia de cada job em progress
-      jobTotalHours = status == "progress" ? (jobTotalHours + Number(job["daily-hours"])) : jobTotalHours;
+      jobTotalHours =
+        status == "progress"
+          ? jobTotalHours + Number(job["daily-hours"])
+          : jobTotalHours;
 
       return {
         ...job,
